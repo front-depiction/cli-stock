@@ -1,0 +1,29 @@
+{
+  "name": "polygon-futures-cli",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run src/index.tsx",
+    "build": "bun build src/index.tsx --outdir dist --target bun",
+    "start": "bun dist/index.js",
+    "format": "prettier --write .",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@effect-atom/atom-react": "^0.4.0",
+    "@effect/cli": "^0.72.0",
+    "@effect/platform": "^0.93.0",
+    "@effect/platform-bun": "^0.83.0",
+    "@opentui/core": "^0.1.36",
+    "@opentui/react": "^0.1.36",
+    "effect": "^3.19.2",
+    "react": "^19.1.1"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/react": "^18.3.12",
+    "prettier": "^3.2.5",
+    "typescript": "^5.7.2"
+  }
+}
