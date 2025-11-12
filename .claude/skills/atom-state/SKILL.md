@@ -55,7 +55,7 @@ export interface CartState {
 
 export const cart = Atom.make<CartState>({
   items: [],
-  total: 0,
+  total: 0
 })
 ```
 
@@ -76,7 +76,7 @@ export const cartSummary = Atom.make((get) => {
   return {
     itemCount: count,
     total: cartData.total,
-    isEmpty: count === 0,
+    isEmpty: count === 0
   }
 })
 ```
@@ -109,7 +109,7 @@ export const addItem = Atom.fn(
 
     yield* Atom.set(cart, {
       items: [...current.items, item],
-      total: current.total + item.price,
+      total: current.total + item.price
     })
   })
 )
@@ -131,7 +131,11 @@ import { Layer } from "effect"
 
 // Create runtime with services
 export const runtime = Atom.runtime(
-  Layer.mergeAll(DatabaseService.Live, LoggerService.Live, ApiClient.Live)
+  Layer.mergeAll(
+    DatabaseService.Live,
+    LoggerService.Live,
+    ApiClient.Live
+  )
 )
 
 // Use services in function atoms
@@ -152,7 +156,13 @@ Configure global layers once at app initialization:
 
 ```typescript
 // App setup
-Atom.runtime.addGlobalLayer(Layer.mergeAll(Logger.Live, Tracer.Live, Config.Live))
+Atom.runtime.addGlobalLayer(
+  Layer.mergeAll(
+    Logger.Live,
+    Tracer.Live,
+    Config.Live
+  )
+)
 ```
 
 ## Pattern: Result Types (Error Handling)
@@ -222,13 +232,13 @@ export const userSettings = Atom.kvs({
   schema: Schema.Struct({
     theme: Schema.Literal("light", "dark"),
     notifications: Schema.Boolean,
-    language: Schema.String,
+    language: Schema.String
   }),
   defaultValue: () => ({
     theme: "light",
     notifications: true,
-    language: "en",
-  }),
+    language: "en"
+  })
 })
 ```
 
@@ -292,8 +302,9 @@ Atoms support scoped effects with automatic cleanup:
 export const wsConnection = Atom.make(
   Effect.gen(function* () {
     // Acquire resource
-    const ws = yield* Effect.acquireRelease(connectWebSocket(), (ws) =>
-      Effect.sync(() => ws.close())
+    const ws = yield* Effect.acquireRelease(
+      connectWebSocket(),
+      (ws) => Effect.sync(() => ws.close())
     )
 
     return ws
@@ -319,17 +330,23 @@ export const wsConnection = Atom.make(
 ### Loading States
 
 ```typescript
-export const userDataAtom = Atom.make<Result.Result<User, Error>>(Result.initial)
+export const userDataAtom = Atom.make<Result.Result<User, Error>>(
+  Result.initial
+)
 
 export const loadUser = runtime.fn(
   Effect.fnUntraced(function* (id: string) {
     yield* Atom.set(userDataAtom, Result.initial)
 
-    const result = yield* Effect.either(userService.fetchUser(id))
+    const result = yield* Effect.either(
+      userService.fetchUser(id)
+    )
 
     yield* Atom.set(
       userDataAtom,
-      result._tag === "Right" ? Result.success(result.right) : Result.failure(result.left)
+      result._tag === "Right"
+        ? Result.success(result.right)
+        : Result.failure(result.left)
     )
   })
 )
@@ -345,7 +362,7 @@ export const updateItem = runtime.fn(
     // Optimistic update
     yield* Atom.set(
       itemsAtom,
-      current.map((item) => (item.id === id ? { ...item, ...updates } : item))
+      current.map(item => item.id === id ? { ...item, ...updates } : item)
     )
 
     // Persist to server
@@ -368,8 +385,9 @@ export const filteredItems = Atom.make((get) => {
   const searchTerm = get(searchAtom)
   const activeFilters = get(filtersAtom)
 
-  return items.filter(
-    (item) => item.name.includes(searchTerm) && activeFilters.every((f) => f.predicate(item))
+  return items.filter(item =>
+    item.name.includes(searchTerm) &&
+    activeFilters.every(f => f.predicate(item))
   )
 })
 ```

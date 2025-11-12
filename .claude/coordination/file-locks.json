@@ -1,0 +1,52 @@
+{
+  "/Users/front_depiction/Desktop/Projects/cli-stock/.claude/hooks/stop-await-mailbox.ts": {
+    "agentId": "8224377b-d897-48a2-ac0a-46a9aeba6433",
+    "acquiredAt": "2025-11-11T16:28:51.319Z",
+    "lastModified": "2025-11-11T16:28:51.319Z"
+  },
+  "/Users/front_depiction/Desktop/Projects/cli-stock/ADT_DESIGN_PROPOSAL.md": {
+    "agentId": "73f586db-d585-4364-90bd-b7f92a99c89e",
+    "acquiredAt": "2025-11-11T16:39:11.087Z",
+    "lastModified": "2025-11-11T16:39:11.087Z"
+  },
+  "/Users/front_depiction/Desktop/Projects/cli-stock/src/domain/Statistics.ts": {
+    "agentId": "73f586db-d585-4364-90bd-b7f92a99c89e",
+    "acquiredAt": "2025-11-11T19:08:07.034Z",
+    "lastModified": "2025-11-11T19:08:07.034Z"
+  },
+  "/Users/front_depiction/Desktop/Projects/cli-stock/src/domain/DomainError.ts": {
+    "agentId": "73f586db-d585-4364-90bd-b7f92a99c89e",
+    "acquiredAt": "2025-11-11T19:08:12.474Z",
+    "lastModified": "2025-11-11T19:08:12.474Z"
+  },
+  "/Users/front_depiction/Desktop/Projects/cli-stock/.claude/coordination/mailboxes/Domain-Error-Implementer.json": {
+    "agentId": "73f586db-d585-4364-90bd-b7f92a99c89e",
+    "acquiredAt": "2025-11-11T19:08:20.735Z",
+    "lastModified": "2025-11-11T19:08:20.735Z"
+  },
+  "/Users/front_depiction/Desktop/Projects/cli-stock/.claude/coordination/mailboxes/Coordinator.json": {
+    "agentId": "73f586db-d585-4364-90bd-b7f92a99c89e",
+    "acquiredAt": "2025-11-11T19:08:30.730Z",
+    "lastModified": "2025-11-11T19:08:30.730Z"
+  },
+  "/Users/front_depiction/Desktop/Projects/cli-stock/src/domain/Trade.ts": {
+    "agentId": "73f586db-d585-4364-90bd-b7f92a99c89e",
+    "acquiredAt": "2025-11-11T19:08:37.592Z",
+    "lastModified": "2025-11-11T19:08:37.592Z"
+  },
+  "/Users/front_depiction/Desktop/Projects/cli-stock/.claude/coordination/mailboxes/TradeData-Implementer.json": {
+    "agentId": "73f586db-d585-4364-90bd-b7f92a99c89e",
+    "acquiredAt": "2025-11-11T19:08:51.975Z",
+    "lastModified": "2025-11-11T19:08:51.975Z"
+  },
+  "/Users/front_depiction/Desktop/Projects/cli-stock/src/test-utils/fixtures.ts": {
+    "agentId": "73f586db-d585-4364-90bd-b7f92a99c89e",
+    "acquiredAt": "2025-11-11T19:13:33.407Z",
+    "lastModified": "2025-11-11T19:13:33.407Z"
+  },
+  "/Users/front_depiction/Desktop/Projects/cli-stock/TYPE_FIXES_SUMMARY.md": {
+    "agentId": "73f586db-d585-4364-90bd-b7f92a99c89e",
+    "acquiredAt": "2025-11-11T19:14:54.769Z",
+    "lastModified": "2025-11-11T19:14:54.769Z"
+  }
+}

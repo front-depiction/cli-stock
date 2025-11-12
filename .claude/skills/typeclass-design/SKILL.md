@@ -39,7 +39,7 @@ export const isMoreThan = <A>(D: Durable<A>) =>
     // Data-first (uncurried) - direct call
     (self: A, minimum: Duration.DurationInput) => boolean
   >(
-    2, // Number of arguments for data-first form
+    2,  // Number of arguments for data-first form
     (self: A, minimum: Duration.DurationInput): boolean => {
       const current = D.getDuration(self)
       return Duration.greaterThanOrEqualTo(current, minimum)
@@ -56,13 +56,21 @@ import { pipe } from "effect/Function"
 import * as Duration from "effect/Duration"
 
 // Data-first: Direct function call
-const hasMinimum = isMoreThan(Appointment.Durable)(appointment, Duration.hours(1))
+const hasMinimum = isMoreThan(Appointment.Durable)(
+  appointment,
+  Duration.hours(1)
+)
 
 // Data-last: Pipe-friendly
-const hasMinimum = pipe(appointment, isMoreThan(Appointment.Durable)(Duration.hours(1)))
+const hasMinimum = pipe(
+  appointment,
+  isMoreThan(Appointment.Durable)(Duration.hours(1))
+)
 
 // Partial application for filtering
-const longAppointments = appointments.filter(isMoreThan(Appointment.Durable)(Duration.hours(1)))
+const longAppointments = appointments.filter(
+  isMoreThan(Appointment.Durable)(Duration.hours(1))
+)
 ```
 
 ## Complete Typeclass Example
@@ -86,7 +94,7 @@ export const make = <A>(
   setDuration: (self: A, duration: Duration.DurationInput) => A
 ): Durable<A> => ({
   getDuration,
-  setDuration,
+  setDuration
 })
 
 /**
@@ -96,8 +104,13 @@ export const isMoreThan = <A>(D: Durable<A>) =>
   Function.dual<
     (minimum: Duration.DurationInput) => (self: A) => boolean,
     (self: A, minimum: Duration.DurationInput) => boolean
-  >(2, (self: A, minimum: Duration.DurationInput): boolean =>
-    Duration.greaterThanOrEqualTo(D.getDuration(self), Duration.decode(minimum))
+  >(
+    2,
+    (self: A, minimum: Duration.DurationInput): boolean =>
+      Duration.greaterThanOrEqualTo(
+        D.getDuration(self),
+        Duration.decode(minimum)
+      )
   )
 
 /**

@@ -61,7 +61,9 @@ import { TestClock } from "effect/TestClock"
 
 it.effect("should handle delays", () =>
   Effect.gen(function* () {
-    const fiber = yield* Effect.fork(Effect.sleep("5 seconds").pipe(Effect.as("done")))
+    const fiber = yield* Effect.fork(
+      Effect.sleep("5 seconds").pipe(Effect.as("done"))
+    )
     yield* TestClock.advance("5 seconds")
     const result = yield* Fiber.join(fiber)
     assert.strictEqual(result, "done")
@@ -133,7 +135,6 @@ describe("Feature", () => {
 ## Running Tests
 
 After writing tests:
-
 ```bash
 bun run test           # Run all tests
 bun run test:watch     # Watch mode

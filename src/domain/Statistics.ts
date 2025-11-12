@@ -1,6 +1,8 @@
 import * as Schema from "effect/Schema"
+import { ParseError } from "effect/ParseResult"
 import * as Brand from "effect/Brand"
 import * as Equivalence from "effect/Equivalence"
+import * as Effect from "effect/Effect"
 import { dual } from "effect/Function"
 import * as Array from "effect/Array"
 import { pipe } from "effect/Function"
@@ -62,10 +64,111 @@ export const TimeWindow = Brand.refined<TimeWindow>(
 )
 
 /**
+ * Event-based window variant (Schema-based).
+ *
+ * @category Schemas
+ * @since 0.4.0
+ * @example
+ * import * as Statistics from "./domain/Statistics"
+ * import * as Effect from "effect/Effect"
+ *
+ * const config = yield* Statistics.makeEventBased(20)
+ */
+export const EventBased = Schema.TaggedStruct("EventBased", {
+  size: Schema.Number.pipe(
+    Schema.int({ message: () => "Window size must be an integer" }),
+    Schema.positive({ message: () => "Window size must be positive" }),
+    Schema.brand("WindowSize")
+  ),
+})
+
+/**
+ * Type for EventBased window configuration.
+ *
+ * @category Types
+ * @since 0.4.0
+ */
+export type EventBased = Schema.Schema.Type<typeof EventBased>
+
+/**
+ * Time-based window variant (Schema-based).
+ *
+ * @category Schemas
+ * @since 0.4.0
+ * @example
+ * import * as Statistics from "./domain/Statistics"
+ * import * as Effect from "effect/Effect"
+ *
+ * const config = yield* Statistics.makeTimeBased(30_000)
+ */
+export const TimeBased = Schema.TaggedStruct("TimeBased", {
+  durationMs: Schema.Number.pipe(
+    Schema.positive({ message: () => "Duration must be positive" }),
+    Schema.brand("TimeWindow")
+  ),
+})
+
+/**
+ * Type for TimeBased window configuration.
+ *
+ * @category Types
+ * @since 0.4.0
+ */
+export type TimeBased = Schema.Schema.Type<typeof TimeBased>
+
+/**
+ * Hybrid window variant (combines event and time constraints).
+ *
+ * @category Schemas
+ * @since 0.4.0
+ * @example
+ * import * as Statistics from "./domain/Statistics"
+ * import * as Effect from "effect/Effect"
+ *
+ * const config = yield* Statistics.makeHybrid(20, 30_000)
+ */
+export const Hybrid = Schema.TaggedStruct("Hybrid", {
+  size: Schema.Number.pipe(
+    Schema.int({ message: () => "Window size must be an integer" }),
+    Schema.positive({ message: () => "Window size must be positive" }),
+    Schema.brand("WindowSize")
+  ),
+  durationMs: Schema.Number.pipe(
+    Schema.positive({ message: () => "Duration must be positive" }),
+    Schema.brand("TimeWindow")
+  ),
+})
+
+/**
+ * Type for Hybrid window configuration.
+ *
+ * @category Types
+ * @since 0.4.0
+ */
+export type Hybrid = Schema.Schema.Type<typeof Hybrid>
+
+/**
+ * WindowConfig discriminated union (Schema-based).
+ *
+ * @category Schemas
+ * @since 0.4.0
+ * @example
+ * import * as Statistics from "./domain/Statistics"
+ * import * as Schema from "effect/Schema"
+ *
+ * const config: Statistics.WindowConfig = { _tag: "EventBased", size: 20 }
+ * const validated = yield* Schema.decode(Statistics.WindowConfig)(config)
+ */
+export const WindowConfigSchema = Schema.Union(EventBased, TimeBased, Hybrid)
+
+/**
  * Window configuration for statistics computation.
  *
  * @category Configuration
  * @since 0.2.0
+ * @remarks
+ * This type is compatible with both the legacy plain union type and the new schema-based type.
+ * The schema types are branded, but structurally compatible for backward compatibility.
  */
 export type WindowConfig =
   | { readonly _tag: "EventBased"; readonly size: number }
@@ -75,6 +178,96 @@ export type WindowConfig =
       readonly size: number
       readonly durationMs: number
     }
+
+/**
+ * Smart constructor for EventBased window configuration with validation.
+ *
+ * @category Constructors
+ * @since 0.4.0
+ * @example
+ * import * as Statistics from "./domain/Statistics"
+ * import * as Effect from "effect/Effect"
+ *
+ * const program = Effect.gen(function* () {
+ *   const config = yield* Statistics.makeEventBased(20)
+ *   const stats = Statistics.emptyStats(config)
+ * })
+ */
+export const makeEventBased = (size: number): Effect.Effect<EventBased, ParseError> =>
+  Schema.decode(EventBased)({ _tag: "EventBased", size })
+
+/**
+ * Smart constructor for TimeBased window configuration with validation.
+ *
+ * @category Constructors
+ * @since 0.4.0
+ * @example
+ * import * as Statistics from "./domain/Statistics"
+ * import * as Effect from "effect/Effect"
+ *
+ * const program = Effect.gen(function* () {
+ *   const config = yield* Statistics.makeTimeBased(30_000)
+ *   const stats = Statistics.emptyStats(config)
+ * })
+ */
+export const makeTimeBased = (durationMs: number): Effect.Effect<TimeBased, ParseError> =>
+  Schema.decode(TimeBased)({ _tag: "TimeBased", durationMs })
+
+/**
+ * Smart constructor for Hybrid window configuration with validation.
+ *
+ * @category Constructors
+ * @since 0.4.0
+ * @example
+ * import * as Statistics from "./domain/Statistics"
+ * import * as Effect from "effect/Effect"
+ *
+ * const program = Effect.gen(function* () {
+ *   const config = yield* Statistics.makeHybrid(20, 30_000)
+ *   const stats = Statistics.emptyStats(config)
+ * })
+ */
+export const makeHybrid = (
+  size: number,
+  durationMs: number
+): Effect.Effect<Hybrid, ParseError> =>
+  Schema.decode(Hybrid)({ _tag: "Hybrid", size, durationMs })
+
+/**
+ * Pattern match on WindowConfig.
+ *
+ * @category Pattern Matching
+ * @since 0.4.0
+ * @example
+ * import * as Statistics from "./domain/Statistics"
+ *
+ * const description = Statistics.matchWindowConfig(config, {
+ *   EventBased: (config) => `Event-based: ${config.size} events`,
+ *   TimeBased: (config) => `Time-based: ${config.durationMs}ms`,
+ *   Hybrid: (config) => `Hybrid: ${config.size} events or ${config.durationMs}ms`
+ * })
+ */
+export const matchWindowConfig = <R>(
+  self: WindowConfig,
+  cases: {
+    EventBased: (config: { readonly _tag: "EventBased"; readonly size: number }) => R
+    TimeBased: (config: { readonly _tag: "TimeBased"; readonly durationMs: number }) => R
+    Hybrid: (config: {
+      readonly _tag: "Hybrid"
+      readonly size: number
+      readonly durationMs: number
+    }) => R
+  }
+): R => {
+  switch (self._tag) {
+    case "EventBased":
+      return cases.EventBased(self)
+    case "TimeBased":
+      return cases.TimeBased(self)
+    case "Hybrid":
+      return cases.Hybrid(self)
+  }
+}
 
 /**
  * Price data point with timestamp for time-based windows.

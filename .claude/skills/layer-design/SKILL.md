@@ -37,8 +37,8 @@ export const ConfigLive = Layer.succeed(
   Config.of({
     getConfig: Effect.succeed({
       logLevel: "INFO",
-      connection: "mysql://localhost/db",
-    }),
+      connection: "mysql://localhost/db"
+    })
   })
 )
 ```
@@ -59,13 +59,13 @@ export class Logger extends Context.Tag("Logger")<
 export const LoggerLive = Layer.effect(
   Logger,
   Effect.gen(function* () {
-    const config = yield* Config // Access dependency
+    const config = yield* Config  // Access dependency
     return Logger.of({
       log: (message) =>
         Effect.gen(function* () {
           const { logLevel } = yield* config.getConfig
           console.log(`[${logLevel}] ${message}`)
-        }),
+        })
     })
   })
 )
@@ -85,11 +85,11 @@ export const DatabaseLive = Layer.scoped(
     // Acquire resource with automatic release
     const connection = yield* Effect.acquireRelease(
       connectToDatabase(config),
-      (conn) => Effect.sync(() => conn.close()) // Cleanup
+      (conn) => Effect.sync(() => conn.close())  // Cleanup
     )
 
     return Database.of({
-      query: (sql) => executeQuery(connection, sql),
+      query: (sql) => executeQuery(connection, sql)
     })
   })
 )
@@ -111,7 +111,6 @@ const AppConfigLive = Layer.merge(ConfigLive, LoggerLive)
 ```
 
 Result combines:
-
 - **Requirements**: Union (`never | Config = Config`)
 - **Outputs**: Union (`Config | Logger`)
 
@@ -129,7 +128,6 @@ const FullLoggerLive = Layer.provide(LoggerLive, ConfigLive)
 ```
 
 Result:
-
 - **Requirements**: Outer layer's requirements (`never`)
 - **Output**: Inner layer's output (`Logger`)
 
@@ -140,21 +138,26 @@ Build applications in layers:
 ```typescript
 // Infrastructure: No dependencies
 const InfrastructureLive = Layer.mergeAll(
-  ConfigLive, // Layer<Config, never, never>
-  DatabaseLive, // Layer<Database, never, Config>
-  CacheLive // Layer<Cache, never, Config>
+  ConfigLive,          // Layer<Config, never, never>
+  DatabaseLive,        // Layer<Database, never, Config>
+  CacheLive            // Layer<Cache, never, Config>
 ).pipe(
-  Layer.provide(ConfigLive) // Satisfy Config requirement
+  Layer.provide(ConfigLive)  // Satisfy Config requirement
 )
 
 // Domain: Depends on infrastructure
 const DomainLive = Layer.mergeAll(
-  PaymentDomainLive, // Layer<PaymentDomain, never, Database>
-  OrderDomainLive // Layer<OrderDomain, never, Database>
-).pipe(Layer.provide(InfrastructureLive))
+  PaymentDomainLive,   // Layer<PaymentDomain, never, Database>
+  OrderDomainLive,     // Layer<OrderDomain, never, Database>
+).pipe(
+  Layer.provide(InfrastructureLive)
+)
 
 // Application: Depends on domain
-const ApplicationLive = Layer.mergeAll(PaymentGatewayLive, NotificationServiceLive).pipe(
+const ApplicationLive = Layer.mergeAll(
+  PaymentGatewayLive,
+  NotificationServiceLive
+).pipe(
   Layer.provide(DomainLive)
 )
 ```
@@ -177,7 +180,7 @@ export const DatabaseLive = Layer.scoped(
 export const DatabaseTest = Layer.succeed(
   Database,
   Database.of({
-    query: () => Effect.succeed({ rows: [] }),
+    query: () => Effect.succeed({ rows: [] })
   })
 )
 
@@ -201,7 +204,7 @@ const program = Effect.all([
   Effect.gen(function* () {
     const config = yield* Config
     // Same instance
-  }),
+  })
 ]).pipe(Effect.provide(ConfigLive))
 ```
 

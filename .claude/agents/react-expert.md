@@ -116,7 +116,6 @@ export function CartView() {
 ## Avoid useEffect
 
 Most `useEffect` usage is wrong. Use:
-
 - Direct calculation during render
 - `useMemo` for expensive computations
 - `useTransition` for non-blocking updates

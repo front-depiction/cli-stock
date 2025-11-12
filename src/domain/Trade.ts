@@ -4,121 +4,173 @@ import * as Order from "effect/Order"
 import * as DateTime from "effect/DateTime"
 import * as Equivalence from "effect/Equivalence"
 
+// ============================================================================
+// Branded Schemas (Preferred)
+// ============================================================================
+
 /**
- * Branded type for stock/crypto symbols.
+ * Schema for branded Symbol type.
  *
- * @category Brands
+ * @category Schemas
  * @since 0.1.0
  * @example
  * import * as Trade from "./domain/Trade"
+ * import * as Schema from "effect/Schema"
+ * import * as Effect from "effect/Effect"
  *
- * const symbol = Trade.Symbol.make("AAPL")
+ * const decodeSymbol = Schema.decode(Trade.SymbolSchema)
+ * const program = decodeSymbol("AAPL") // Effect<Symbol, ParseError>
  */
-export type Symbol = string & Brand.Brand<"Symbol">
+export const SymbolSchema = Schema.String.pipe(
+  Schema.nonEmpty({ message: () => "Symbol cannot be empty" }),
+  Schema.brand("Symbol")
+)
 
 /**
- * Brand for Symbol.
+ * Schema for branded Price type.
  *
- * @category Brands
- * @since 0.1.0
- */
-export const Symbol = Brand.nominal<Symbol>()
-
-/**
- * Branded type for trade prices.
- *
- * @category Brands
+ * @category Schemas
  * @since 0.1.0
  * @example
  * import * as Trade from "./domain/Trade"
+ * import * as Schema from "effect/Schema"
  *
- * const price = Trade.Price.make(150.25)
+ * const decodePrice = Schema.decode(Trade.PriceSchema)
+ * const program = decodePrice(150.25) // Effect<Price, ParseError>
  */
-export type Price = number & Brand.Brand<"Price">
-
-/**
- * Brand for Price.
- *
- * @category Brands
- * @since 0.1.0
- */
-export const Price = Brand.refined<Price>(
-  (n) => n >= 0,
-  (n) => Brand.error(`Price must be non-negative, got ${n}`)
+export const PriceSchema = Schema.Number.pipe(
+  Schema.nonNegative({ message: () => "Price must be non-negative" }),
+  Schema.finite({ message: () => "Price must be finite" }),
+  Schema.brand("Price")
 )
 
 /**
- * Branded type for trade volume.
+ * Schema for branded Volume type.
  *
- * @category Brands
+ * @category Schemas
  * @since 0.1.0
- */
-export type Volume = number & Brand.Brand<"Volume">
-
-/**
- * Brand for Volume.
+ * @example
+ * import * as Trade from "./domain/Trade"
+ * import * as Schema from "effect/Schema"
  *
- * @category Brands
- * @since 0.1.0
+ * const decodeVolume = Schema.decode(Trade.VolumeSchema)
+ * const program = decodeVolume(1000) // Effect<Volume, ParseError>
  */
-export const Volume = Brand.refined<Volume>(
-  (n) => n >= 0,
-  (n) => Brand.error(`Volume must be non-negative, got ${n}`)
+export const VolumeSchema = Schema.Number.pipe(
+  Schema.nonNegative({ message: () => "Volume must be non-negative" }),
+  Schema.finite({ message: () => "Volume must be finite" }),
+  Schema.brand("Volume")
 )
 
 /**
- * Branded type for timestamp in milliseconds.
+ * Schema for branded Timestamp type.
  *
- * @category Brands
+ * @category Schemas
  * @since 0.1.0
- */
-export type Timestamp = number & Brand.Brand<"Timestamp">
-
-/**
- * Brand for Timestamp.
+ * @example
+ * import * as Trade from "./domain/Trade"
+ * import * as Schema from "effect/Schema"
  *
- * @category Brands
- * @since 0.1.0
+ * const decodeTimestamp = Schema.decode(Trade.TimestampSchema)
+ * const program = decodeTimestamp(Date.now()) // Effect<Timestamp, ParseError>
  */
-export const Timestamp = Brand.refined<Timestamp>(
-  (n) => n > 0,
-  (n) => Brand.error(`Timestamp must be positive, got ${n}`)
+export const TimestampSchema = Schema.Number.pipe(
+  Schema.positive({ message: () => "Timestamp must be positive" }),
+  Schema.int({ message: () => "Timestamp must be an integer" }),
+  Schema.brand("Timestamp")
 )
 
 /**
- * Branded type for latency in milliseconds.
+ * Schema for branded Latency type.
  *
- * @category Brands
+ * @category Schemas
  * @since 0.1.0
- */
-export type Latency = number & Brand.Brand<"Latency">
-
-/**
- * Brand for Latency.
+ * @example
+ * import * as Trade from "./domain/Trade"
+ * import * as Schema from "effect/Schema"
  *
- * @category Brands
- * @since 0.1.0
+ * const decodeLatency = Schema.decode(Trade.LatencySchema)
+ * const program = decodeLatency(42) // Effect<Latency, ParseError>
  */
-export const Latency = Brand.refined<Latency>(
-  (n) => n >= 0,
-  (n) => Brand.error(`Latency must be non-negative, got ${n}`)
+export const LatencySchema = Schema.Number.pipe(
+  Schema.nonNegative({ message: () => "Latency must be non-negative" }),
+  Schema.finite({ message: () => "Latency must be finite" }),
+  Schema.brand("Latency")
 )
 
 /**
  * Schema for TradeData representing a trade from Finnhub.
+ * Uses branded schemas for type-safe validation.
  *
  * @category Schemas
  * @since 0.1.0
+ * @example
+ * import * as Trade from "./domain/Trade"
+ * import * as Schema from "effect/Schema"
+ *
+ * const decodeTrade = Schema.decode(Trade.TradeData)
+ * const program = decodeTrade({
+ *   symbol: "AAPL",
+ *   price: 150.25,
+ *   volume: 1000,
+ *   timestamp: Date.now(),
+ *   receivedAt: Date.now(),
+ *   latency: 42
+ * })
  */
 export const TradeData = Schema.Struct({
-  symbol: Schema.String,
-  price: Schema.Number,
-  volume: Schema.Number,
-  timestamp: Schema.Number,
+  symbol: SymbolSchema,
+  price: PriceSchema,
+  volume: VolumeSchema,
+  timestamp: TimestampSchema,
   conditions: Schema.optional(Schema.Array(Schema.String)),
-  receivedAt: Schema.Number,
-  latency: Schema.Number,
+  receivedAt: TimestampSchema,
+  latency: LatencySchema,
 })
+
+// ============================================================================
+// Type Exports (from Schemas)
+// ============================================================================
+
+/**
+ * Branded type for stock/crypto symbols.
+ *
+ * @category Types
+ * @since 0.1.0
+ */
+export type Symbol = Schema.Schema.Type<typeof SymbolSchema>
+
+/**
+ * Branded type for trade prices.
+ *
+ * @category Types
+ * @since 0.1.0
+ */
+export type Price = Schema.Schema.Type<typeof PriceSchema>
+
+/**
+ * Branded type for trade volume.
+ *
+ * @category Types
+ * @since 0.1.0
+ */
+export type Volume = Schema.Schema.Type<typeof VolumeSchema>
+
+/**
+ * Branded type for timestamp in milliseconds.
+ *
+ * @category Types
+ * @since 0.1.0
+ */
+export type Timestamp = Schema.Schema.Type<typeof TimestampSchema>
+
+/**
+ * Branded type for latency in milliseconds.
+ *
+ * @category Types
+ * @since 0.1.0
+ */
+export type Latency = Schema.Schema.Type<typeof LatencySchema>
 
 /**
  * Type for TradeData.
@@ -127,6 +179,102 @@ export const TradeData = Schema.Struct({
  * @since 0.1.0
  */
 export type TradeData = Schema.Schema.Type<typeof TradeData>
+
+// ============================================================================
+// Deprecated Brand Constructors (Backwards Compatibility)
+// ============================================================================
+
+/**
+ * Brand constructor for Symbol.
+ *
+ * @category Brands
+ * @since 0.1.0
+ * @deprecated Use Schema.decode(SymbolSchema)(value) instead for runtime validation
+ * @example
+ * // Old way (deprecated):
+ * const symbol = Symbol.make("AAPL")
+ *
+ * // New way (preferred):
+ * import * as Effect from "effect/Effect"
+ * const program = Schema.decode(SymbolSchema)("AAPL")
+ */
+export const Symbol = Brand.nominal<Symbol>()
+
+/**
+ * Brand constructor for Price.
+ *
+ * @category Brands
+ * @since 0.1.0
+ * @deprecated Use Schema.decode(PriceSchema)(value) instead for runtime validation
+ * @example
+ * // Old way (deprecated):
+ * const price = Price.make(150.25)
+ *
+ * // New way (preferred):
+ * import * as Effect from "effect/Effect"
+ * const program = Schema.decode(PriceSchema)(150.25)
+ */
+export const Price = Brand.refined<Price>(
+  (n) => n >= 0,
+  (n) => Brand.error(`Price must be non-negative, got ${n}`)
+)
+
+/**
+ * Brand constructor for Volume.
+ *
+ * @category Brands
+ * @since 0.1.0
+ * @deprecated Use Schema.decode(VolumeSchema)(value) instead for runtime validation
+ * @example
+ * // Old way (deprecated):
+ * const volume = Volume.make(1000)
+ *
+ * // New way (preferred):
+ * import * as Effect from "effect/Effect"
+ * const program = Schema.decode(VolumeSchema)(1000)
+ */
+export const Volume = Brand.refined<Volume>(
+  (n) => n >= 0,
+  (n) => Brand.error(`Volume must be non-negative, got ${n}`)
+)
+
+/**
+ * Brand constructor for Timestamp.
+ *
+ * @category Brands
+ * @since 0.1.0
+ * @deprecated Use Schema.decode(TimestampSchema)(value) instead for runtime validation
+ * @example
+ * // Old way (deprecated):
+ * const timestamp = Timestamp.make(Date.now())
+ *
+ * // New way (preferred):
+ * import * as Effect from "effect/Effect"
+ * const program = Schema.decode(TimestampSchema)(Date.now())
+ */
+export const Timestamp = Brand.refined<Timestamp>(
+  (n) => n > 0,
+  (n) => Brand.error(`Timestamp must be positive, got ${n}`)
+)
+
+/**
+ * Brand constructor for Latency.
+ *
+ * @category Brands
+ * @since 0.1.0
+ * @deprecated Use Schema.decode(LatencySchema)(value) instead for runtime validation
+ * @example
+ * // Old way (deprecated):
+ * const latency = Latency.make(42)
+ *
+ * // New way (preferred):
+ * import * as Effect from "effect/Effect"
+ * const program = Schema.decode(LatencySchema)(42)
+ */
+export const Latency = Brand.refined<Latency>(
+  (n) => n >= 0,
+  (n) => Brand.error(`Latency must be non-negative, got ${n}`)
+)
 
 /**
  * Type guard for TradeData.

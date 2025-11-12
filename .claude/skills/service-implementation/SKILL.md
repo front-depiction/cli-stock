@@ -30,7 +30,9 @@ Each service represents ONE cohesive capability:
 ```typescript
 // ✅ CORRECT - Focused capabilities
 
-export class PaymentGateway extends Context.Tag("@services/payment/PaymentGateway")<
+export class PaymentGateway extends Context.Tag(
+  "@services/payment/PaymentGateway"
+)<
   PaymentGateway,
   {
     readonly handoff: (
@@ -41,7 +43,9 @@ export class PaymentGateway extends Context.Tag("@services/payment/PaymentGatewa
   }
 >() {}
 
-export class PaymentWebhookGateway extends Context.Tag("@services/payment/PaymentWebhookGateway")<
+export class PaymentWebhookGateway extends Context.Tag(
+  "@services/payment/PaymentWebhookGateway"
+)<
   PaymentWebhookGateway,
   {
     readonly validateWebhook: (
@@ -50,7 +54,9 @@ export class PaymentWebhookGateway extends Context.Tag("@services/payment/Paymen
   }
 >() {}
 
-export class PaymentRefundGateway extends Context.Tag("@services/payment/PaymentRefundGateway")<
+export class PaymentRefundGateway extends Context.Tag(
+  "@services/payment/PaymentRefundGateway"
+)<
   PaymentRefundGateway,
   {
     readonly refund: (
@@ -70,7 +76,9 @@ Service operations should **never** have requirements:
 export class Database extends Context.Tag("Database")<
   Database,
   {
-    readonly query: (sql: string) => Effect.Effect<QueryResult, QueryError, never>
+    readonly query: (
+      sql: string
+    ) => Effect.Effect<QueryResult, QueryError, never>
     //                                             ▲
     //                                  Requirements = never
   }
@@ -84,8 +92,8 @@ Dependencies are handled during **layer construction**, not in the service inter
 export const DatabaseLive = Layer.effect(
   Database,
   Effect.gen(function* () {
-    const config = yield* Config // Dependency
-    const logger = yield* Logger // Dependency
+    const config = yield* Config    // Dependency
+    const logger = yield* Logger    // Dependency
 
     return Database.of({
       query: (sql) =>
@@ -93,7 +101,7 @@ export const DatabaseLive = Layer.effect(
           yield* logger.log(`Executing: ${sql}`)
           const { connection } = yield* config.getConfig
           return executeQuery(connection, sql)
-        }),
+        })
     })
   })
 )
@@ -108,15 +116,15 @@ Different implementations support different capabilities:
 export const CashGatewayLive = Layer.succeed(
   PaymentGateway,
   PaymentGateway.of({
-    handoff: (intent) => fulfillCashPayment(intent),
+    handoff: (intent) => fulfillCashPayment(intent)
   })
 )
 
 // Stripe: Full capability suite
 export const StripeGatewayLive = Layer.mergeAll(
-  StripeHandoffLive, // Implements PaymentGateway
-  StripeWebhookLive, // Implements PaymentWebhookGateway
-  StripeRefundLive // Implements PaymentRefundGateway
+  StripeHandoffLive,      // Implements PaymentGateway
+  StripeWebhookLive,      // Implements PaymentWebhookGateway
+  StripeRefundLive        // Implements PaymentRefundGateway
 )
 ```
 
@@ -152,25 +160,25 @@ const TestWebhook = Layer.succeed(
     validateWebhook: (payload) =>
       payload.signature === "valid"
         ? Effect.succeed(undefined)
-        : Effect.fail(new WebhookValidationError({ reason: "Invalid" })),
+        : Effect.fail(new WebhookValidationError({ reason: "Invalid" }))
   })
 )
 
 // Test only webhook validation, no other payment concerns
-const testProgram = handleWebhook(payload).pipe(Effect.provide(TestWebhook))
+const testProgram = handleWebhook(payload).pipe(
+  Effect.provide(TestWebhook)
+)
 ```
 
 ## Naming Convention
 
 Use descriptive capability names:
-
 - `*Gateway` - External system integration
 - `*Repository` - Data persistence
 - `*Domain` - Business logic
 - `*Service` - General capability (use sparingly)
 
 Tag identifiers should include namespace:
-
 - `"@services/payment/PaymentGateway"`
 - `"@repositories/user/UserRepository"`
 - `"@domain/order/OrderDomain"`
